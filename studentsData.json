@@ -1,0 +1,122 @@
+[
+  {
+    "Roll No": 1,
+    "Name": "Aakash Kumar",
+    "Math": 85,
+    "Science": 78,
+    "English": 88,
+    "History": 74,
+    "Computer": 90,
+    "Total": 415,
+    "Percentage": 83.0,
+    "Grade": "A"
+  },
+  {
+    "Roll No": 2,
+    "Name": "Priya Singh",
+    "Math": 92,
+    "Science": 95,
+    "English": 91,
+    "History": 89,
+    "Computer": 94,
+    "Total": 461,
+    "Percentage": 92.2,
+    "Grade": "A+"
+  },
+  {
+    "Roll No": 3,
+    "Name": "Rohan Mehta",
+    "Math": 76,
+    "Science": 65,
+    "English": 72,
+    "History": 68,
+    "Computer": 70,
+    "Total": 351,
+    "Percentage": 70.2,
+    "Grade": "B"
+  },
+  {
+    "Roll No": 4,
+    "Name": "Sneha Verma",
+    "Math": 58,
+    "Science": 60,
+    "English": 62,
+    "History": 55,
+    "Computer": 59,
+    "Total": 294,
+    "Percentage": 58.8,
+    "Grade": "C"
+  },
+  {
+    "Roll No": 5,
+    "Name": "Aryan Sharma",
+    "Math": 88,
+    "Science": 85,
+    "English": 86,
+    "History": 80,
+    "Computer": 87,
+    "Total": 426,
+    "Percentage": 85.2,
+    "Grade": "A"
+  },
+  {
+    "Roll No": 6,
+    "Name": "Neha Rathi",
+    "Math": 98,
+    "Science": 99,
+    "English": 97,
+    "History": 96,
+    "Computer": 95,
+    "Total": 485,
+    "Percentage": 97.0,
+    "Grade": "A+"
+  },
+  {
+    "Roll No": 7,
+    "Name": "Rahul Yadav",
+    "Math": 45,
+    "Science": 50,
+    "English": 40,
+    "History": 42,
+    "Computer": 38,
+    "Total": 215,
+    "Percentage": 43.0,
+    "Grade": "F"
+  },
+  {
+    "Roll No": 8,
+    "Name": "Tanya Das",
+    "Math": 67,
+    "Science": 70,
+    "English": 75,
+    "History": 72,
+    "Computer": 68,
+    "Total": 352,
+    "Percentage": 70.4,
+    "Grade": "B"
+  },
+  {
+    "Roll No": 9,
+    "Name": "Kabir Joshi",
+    "Math": 80,
+    "Science": 82,
+    "English": 79,
+    "History": 77,
+    "Computer": 85,
+    "Total": 403,
+    "Percentage": 80.6,
+    "Grade": "A"
+  },
+  {
+    "Roll No": 10,
+    "Name": "Isha Malhotra",
+    "Math": 91,
+    "Science": 90,
+    "English": 93,
+    "History": 89,
+    "Computer": 92,
+    "Total": 455,
+    "Percentage": 91.0,
+    "Grade": "A+"
+  }
+]
