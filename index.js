@@ -1,5 +1,4 @@
 import OpenAI from "openai";
-import { readFile } from "fs/promises";
 import express from "express";
 import cors from "cors";
 import cookieparser from "cookie-parser";
@@ -10,9 +9,6 @@ dotenv.config({
   path: "./.env",
 });
 
-const data = await readFile("./studentsData.json", "utf-8");
-const studentsData = JSON.parse(data);
-// console.log(studentsData);
 const app = express();
 
 app.use(cors());
