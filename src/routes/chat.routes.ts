@@ -25,10 +25,10 @@ router.get("/room", isUserAuthenticated, getChatRooms);
 // this router will create a new chat room and save it in db
 router.post("/room/create", isUserAuthenticated, createChatRoom);
 // this router will get all chats for a specific chat room
-router.get("/:chatRoomId", validateObjectId("chatRoomId"), getChats);
+router.get("/:chatRoomId", getChats);
 // this router will generate AI response using OpenAI and openrouter API
 router.post("/generate", getChatResponse);
 // this router will create a new chat (with role: user or assistant) and save it in db
-router.post("/create/:chatRoomId", validateObjectId("chatRoomId"), createChat);
+router.post("/create/:chatRoomId", createChat);
 
 export default router;

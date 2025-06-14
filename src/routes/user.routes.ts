@@ -1,8 +1,9 @@
 import express from "express";
 import {
+  getUser,
   //   signupUser,
   //   loginUserWithEmail,
-    logoutUser,
+  logoutUser,
   //   deleteUser,
   //   updateUser,
   //   updateOrResetPassword,
@@ -10,9 +11,11 @@ import {
 } from "../controllers/user.controller";
 // import { isEmailVerify } from "../middlewares/email.middlewares.js";
 import { isUserAuthenticated } from "../middlewares/auth.middleware";
+// import { getUser } from "../controllers/user.controller";
 
 const router = express.Router();
 
+router.get("/", isUserAuthenticated, getUser);
 // // Define a POST route for user signup
 // router.post("/signup", isEmailVerify, signupUser);
 // // define a POST route for user login

@@ -2,17 +2,14 @@ import { Document, mongo } from "mongoose";
 import OpenAI from "openai";
 import { Response, Request } from "express";
 
-export {
-  IUser,
-  IChatRoom
-};
+export { IUser, IChatRoom };
 
 declare global {
   interface IChat extends Document {
-    id: string;
+    chatId: string;
     role: "user" | "assistant";
     content: string;
-    chatRoomId: mongo.ObjectId;
+    chatRoomId: string;
     usedModel: string;
   }
 

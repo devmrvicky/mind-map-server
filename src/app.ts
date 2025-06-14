@@ -37,6 +37,6 @@ import authRoutes from "./routes/OAuth.routes";
 app.use("/api/auth", authRoutes);
 
 import userRoutes from "./routes/user.routes";
-app.use("/api/auth", userRoutes);
+app.use("/api/user", userRoutes);
 
 export default app;

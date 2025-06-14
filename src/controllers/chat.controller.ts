@@ -16,7 +16,9 @@ const getChatResponse = async (req: Request, res: Response) => {
     // generate AI response using OpenAI API
     const aiResponse = await generateAIResponse({ query, prevResponse, model });
     if (!aiResponse) {
-      res.status(500).json({ status: false, message: "Failed to generate AI response" });
+      res
+        .status(500)
+        .json({ status: false, message: "Failed to generate AI response" });
       return;
     }
     res.status(200).json({
@@ -25,12 +27,10 @@ const getChatResponse = async (req: Request, res: Response) => {
     });
   } catch (error) {
     console.error("Error generating AI response:", error);
-    res
-      .status(500)
-      .json({
-        status: false,
-        message: error instanceof Error ? error.message : "Unknown error",
-      });
+    res.status(500).json({
+      status: false,
+      message: error instanceof Error ? error.message : "Unknown error",
+    });
   }
 };
 
@@ -57,31 +57,33 @@ const getChats = async (req: Request, res: Response): Promise<void> => {
 // create chat
 const createChat = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { content, model, chatId, role } = req.body;
+    const { content, usedModel, chatId, role } = req.body;
     const chatRoomId = req.params.chatRoomId; // get chat room id from params
-    if (!content || !model || !chatId || !chatRoomId || !role) { 
-      res.status(400).json({ status: false, message: "Check if you have enter prompt and select any model" });
+    console.log({ content, usedModel, chatId, role, chatRoomId });
+    if (!content || !usedModel || !chatId || !chatRoomId || !role) {
+      res.status(400).json({
+        status: false,
+        message: "Check if you have enter prompt and select any model",
+      });
       return;
     }
     // create a new chat
     const newChat = await Chat.create({
-      id: chatId,
+      chatId,
       role: role,
       content: content,
       chatRoomId: chatRoomId,
-      usedModel: model,
+      usedModel,
     });
     res
       .status(201)
       .json({ message: "Chat created successfully", chat: newChat });
   } catch (error) {
     console.error("Error creating chat:", error);
-    res
-      .status(500)
-      .json({
-        status: false,
-        message: error instanceof Error ? error.message : "Unknown error",
-      });
+    res.status(500).json({
+      status: false,
+      message: error instanceof Error ? error.message : "Unknown error",
+    });
   }
 };
 
@@ -91,7 +93,9 @@ const getChatRooms = async (req: Request, res: Response) => {
     const userId = req.user?._id; // here userId is coming from the auth middleware
     console.log("user id from get chat rooms controller:=> ", userId);
     if (!userId) {
-      res.status(400).json({ status: false, message: "User authentication failed." });
+      res
+        .status(400)
+        .json({ status: false, message: "User authentication failed." });
       return;
     }
     const chatRooms = await ChatRoom.find({ userId });
@@ -100,12 +104,10 @@ const getChatRooms = async (req: Request, res: Response) => {
       .json({ message: "Chat rooms fetched successfully", chatRooms });
   } catch (error) {
     console.error("Error fetching chat rooms:", error);
-    res
-      .status(500)
-      .json({
-        status: false,
-        massage: error instanceof Error ? error.message : "Unknown error",
-      });
+    res.status(500).json({
+      status: false,
+      massage: error instanceof Error ? error.message : "Unknown error",
+    });
   }
 };
 
@@ -135,9 +137,7 @@ const createChatRoom = async (req: Request, res: Response) => {
     });
   } catch (error) {
     console.error("Error creating chat room:", error);
-    res
-    .status(500)
-    .json({
+    res.status(500).json({
       stauts: false,
       message: error instanceof Error ? error.message : "Unknown error",
     });

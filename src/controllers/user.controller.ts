@@ -4,6 +4,27 @@ import { User } from "../model/user.model";
 import { IUser } from "../types/globle.d";
 import { Request, Response } from "express";
 
+// get user
+const getUser = async (req: Request, res: Response) => {
+  try {
+    const userId = req.user?._id;
+    if (!userId) {
+      res.status(400).json({ status: false, message: "User not found." });
+      return;
+    }
+    const user = await User.findById(userId).select("-password -refreshToken");
+    if (!user) {
+      res.status(404).json({ status: false, message: "User does not exist." });
+      return;
+    }
+    res.status(200).json({ status: true, user });
+  } catch (error) {
+    const errorMessage =
+      error instanceof Error ? error.message : "An unknown error occurred";
+    res.status(500).json({ status: false, message: errorMessage });
+  }
+};
+
 // signup user
 // const signupUser = async (req, res) => {
 //   const { email, password, confirmPassword } = req.body;
@@ -167,8 +188,8 @@ const createdUserDocForSignupWithGoogle = async (
 const logoutUser = async (req: Request, res: Response) => {
   console.log("you hit successfully /logoutUser endpoint");
   try {
-    if(!req.user){
-      res.status(400).json({status: false, message: "User did not find."})
+    if (!req.user) {
+      res.status(400).json({ status: false, message: "User did not find." });
       return;
     }
     await User.findByIdAndUpdate(req.user._id, {
@@ -181,7 +202,8 @@ const logoutUser = async (req: Request, res: Response) => {
       .json({ status: true, message: "user logout successfully." });
   } catch (error) {
     console.error("error while user logout ", error);
-    const errorMessage = error instanceof Error ? error.message : "An unknown error occurred";
+    const errorMessage =
+      error instanceof Error ? error.message : "An unknown error occurred";
     res.status(500).json({ status: false, message: errorMessage });
   }
 };
@@ -313,6 +335,7 @@ const logoutUser = async (req: Request, res: Response) => {
 // };
 
 export {
+  getUser,
   // signupUser,
   // loginUserWithEmail,
   logoutUser,

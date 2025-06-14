@@ -23,14 +23,20 @@ async function generateAIResponse({
   model,
 }: IGenerateAIResponseParams) {
   try {
+    console.log(process.env.OPENROUTER_API_KEY);
+
     const completion = await openai.chat.completions.create({
       model: model ? model : "mistralai/mistral-small-3.1-24b-instruct:free",
       messages: [
         {
           role: "system",
-          content: `${SYSTEM_PROMPT}  ${prevResponse ? `your previous response "${prevResponse}" Use the previous response as the context for the current conversation. 
+          content: `${SYSTEM_PROMPT}  ${
+            prevResponse
+              ? `your previous response "${prevResponse}" Use the previous response as the context for the current conversation. 
           Always refer to the previous response to maintain continuity and provide accurate and relevant answers. 
-          If the user asks a follow-up question, ensure your response aligns with the context established in the previous interaction.`: ""}`,
+          If the user asks a follow-up question, ensure your response aligns with the context established in the previous interaction.`
+              : ""
+          }`,
         },
         {
           role: "user",
