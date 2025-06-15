@@ -1,4 +1,7 @@
-import { generateAIResponse } from "../config/openaiConfig";
+import {
+  generateAIResponse,
+  generateImageResponse,
+} from "../config/openaiConfig";
 import { Chat } from "../model/chat.model";
 import { Request, Response } from "express";
 import { ChatRoom } from "../model/chatRoom.model";
@@ -144,4 +147,40 @@ const createChatRoom = async (req: Request, res: Response) => {
   }
 };
 
-export { createChat, createChatRoom, getChats, getChatRooms, getChatResponse };
+
+// generate image controller
+const imageGenerate = async (req: Request, res: Response) => {
+  try {
+    const { prompt, model } = req.body;
+    if (!prompt) {
+      res.status(400).json({
+        status: false,
+        message: "Prompt is required to generate an image.",
+      });
+      return 
+    }
+
+    const imageResponse = await generateImageResponse({ prompt, model });
+    if (!imageResponse) {
+      res.status(500).json({
+        status: false,
+        message: "Failed to generate image.",
+      });
+      return 
+    }
+
+    res.status(200).json({
+      status: true,
+      message: "Image generated successfully.",
+      data: imageResponse,
+    });
+  } catch (error) {
+    console.error("Error generating image:", error);
+    res.status(500).json({
+      status: false,
+      message: error instanceof Error ? error.message : "Unknown error",
+    });
+  }
+};
+
+export { createChat, createChatRoom, getChats, getChatRooms, getChatResponse, imageGenerate };

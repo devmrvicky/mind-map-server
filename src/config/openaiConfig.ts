@@ -5,6 +5,7 @@ dotenv.config({
   path: "./.env",
 });
 
+// openai configure for ai chat
 const openai = new OpenAI({
   baseURL: process.env.OPENROUTER_BASE_URL,
   apiKey: process.env.OPENROUTER_API_KEY,
@@ -81,4 +82,24 @@ async function generateAIResponse({
   }
 }
 
-export { generateAIResponse, openai };
+// oepnai configure for generate image
+const client = new OpenAI({
+  baseURL: process.env.NEBIUS_BASE_URL,
+  apiKey: process.env.NEBIUS_API_KEY,
+});
+
+async function generateImageResponse({
+  model = "stability-ai/sdxl",
+  prompt,
+}: {
+  model?: string;
+  prompt: string;
+}) {
+  const imagesResponse = await client.images.generate({
+    model: "black-forest-labs/flux-dev",
+    prompt,
+  });
+  return imagesResponse;
+}
+
+export { generateAIResponse, openai, generateImageResponse };

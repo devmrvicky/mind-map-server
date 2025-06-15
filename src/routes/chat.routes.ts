@@ -16,6 +16,7 @@ import {
   getChats,
   getChatRooms,
   getChatResponse,
+  imageGenerate,
 } from "../controllers/chat.controller";
 import { isUserAuthenticated } from "../middlewares/auth.middleware";
 import validateObjectId from "../middlewares/validateObjectId.middleware";
@@ -30,5 +31,7 @@ router.get("/:chatRoomId", getChats);
 router.post("/generate", getChatResponse);
 // this router will create a new chat (with role: user or assistant) and save it in db
 router.post("/create/:chatRoomId", createChat);
+
+router.post("/image/generate", isUserAuthenticated, imageGenerate)
 
 export default router;
