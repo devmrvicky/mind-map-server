@@ -99,16 +99,18 @@ const getUserDetailsAndCreateUserOrLogin = async (
     // console.log({ status: true, message: "User logged in successfully", user });
     res
       .status(200)
-      .cookie("accessToken", accessToken)
+      .cookie("accessToken", accessToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "PRODUCTION",
+        sameSite: process.env.NODE_ENV === "PRODUCTION" ? "none" : "lax",
+      })
       .json({ status: true, message: "User logged in successfully", user });
   } catch (error) {
     console.error("error while fatching user detail " + error);
-    res
-      .status(500)
-      .json({
-        status: false,
-        message: error instanceof Error ? error.message : "Unknown error",
-      });
+    res.status(500).json({
+      status: false,
+      message: error instanceof Error ? error.message : "Unknown error",
+    });
   }
 };
 
