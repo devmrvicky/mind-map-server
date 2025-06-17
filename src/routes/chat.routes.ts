@@ -17,6 +17,8 @@ import {
   getChatRooms,
   getChatResponse,
   imageGenerate,
+  deleteChatRoom,
+  deleteAllChatsInRoom,
 } from "../controllers/chat.controller";
 import { isUserAuthenticated } from "../middlewares/auth.middleware";
 import validateObjectId from "../middlewares/validateObjectId.middleware";
@@ -25,6 +27,8 @@ import validateObjectId from "../middlewares/validateObjectId.middleware";
 router.get("/room", isUserAuthenticated, getChatRooms);
 // this router will create a new chat room and save it in db
 router.post("/room/create", isUserAuthenticated, createChatRoom);
+// this router will delete a chat room by its ID
+router.delete("/room/delete/:chatRoomId", isUserAuthenticated, deleteChatRoom);
 // this router will get all chats for a specific chat room
 router.get("/:chatRoomId", getChats);
 // this router will generate AI response using OpenAI and openrouter API
@@ -32,6 +36,13 @@ router.post("/generate", getChatResponse);
 // this router will create a new chat (with role: user or assistant) and save it in db
 router.post("/create/:chatRoomId", createChat);
 
-router.post("/image/generate", isUserAuthenticated, imageGenerate)
+// this router will delete all chats in a chat room
+router.delete(
+  "/all/delete/:chatRoomId",
+  isUserAuthenticated,
+  deleteAllChatsInRoom
+);
+
+router.post("/image/generate", isUserAuthenticated, imageGenerate);
 
 export default router;

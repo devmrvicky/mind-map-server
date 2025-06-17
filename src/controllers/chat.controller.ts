@@ -90,6 +90,33 @@ const createChat = async (req: Request, res: Response): Promise<void> => {
   }
 };
 
+// delete all chats in a chat room
+const deleteAllChatsInRoom = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  try {
+    const chatRoomId = req.params.chatRoomId;
+    if (!chatRoomId) {
+      res
+        .status(400)
+        .json({ status: false, message: "Chat room ID is required." });
+      return;
+    }
+    const result = await Chat.deleteMany({ chatRoomId });
+    res.status(200).json({
+      message: "All chats in the chat room deleted successfully.",
+      deletedCount: result.deletedCount,
+    });
+  } catch (error) {
+    console.error("Error deleting chats in chat room:", error);
+    res.status(500).json({
+      status: false,
+      message: error instanceof Error ? error.message : "Unknown error",
+    });
+  }
+};
+
 // get all chat rooms
 const getChatRooms = async (req: Request, res: Response) => {
   try {
@@ -147,6 +174,30 @@ const createChatRoom = async (req: Request, res: Response) => {
   }
 };
 
+// delete chat room
+const deleteChatRoom = async (req: Request, res: Response) => {
+  try {
+    const chatRoomId = req.params.chatRoomId;
+    if (!chatRoomId) {
+      res
+        .status(400)
+        .json({ status: false, message: "Chat room ID is required." });
+      return;
+    }
+    const deletedRoom = await ChatRoom.findOneAndDelete({ chatRoomId });
+    if (!deletedRoom) {
+      res.status(404).json({ status: false, message: "Chat room not found." });
+      return;
+    }
+    res.status(200).json({ message: "Chat room deleted successfully." });
+  } catch (error) {
+    console.error("Error deleting chat room:", error);
+    res.status(500).json({
+      status: false,
+      message: error instanceof Error ? error.message : "Unknown error",
+    });
+  }
+};
 
 // generate image controller
 const imageGenerate = async (req: Request, res: Response) => {
@@ -157,7 +208,7 @@ const imageGenerate = async (req: Request, res: Response) => {
         status: false,
         message: "Prompt is required to generate an image.",
       });
-      return 
+      return;
     }
 
     const imageResponse = await generateImageResponse({ prompt, model });
@@ -166,7 +217,7 @@ const imageGenerate = async (req: Request, res: Response) => {
         status: false,
         message: "Failed to generate image.",
       });
-      return 
+      return;
     }
 
     res.status(200).json({
@@ -183,4 +234,13 @@ const imageGenerate = async (req: Request, res: Response) => {
   }
 };
 
-export { createChat, createChatRoom, getChats, getChatRooms, getChatResponse, imageGenerate };
+export {
+  createChat,
+  createChatRoom,
+  getChats,
+  getChatRooms,
+  getChatResponse,
+  imageGenerate,
+  deleteChatRoom,
+  deleteAllChatsInRoom,
+};
