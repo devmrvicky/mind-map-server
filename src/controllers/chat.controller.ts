@@ -74,9 +74,14 @@ const createChat = async (req: Request, res: Response): Promise<void> => {
     const newChat = await Chat.create({
       chatId,
       role: role,
-      content: content,
+      content: [
+        {
+          content,
+          type: "text", // assuming the content is text, can be changed based on requirements
+          model: usedModel,
+        },
+      ],
       chatRoomId: chatRoomId,
-      usedModel,
     });
     res
       .status(201)

@@ -16,8 +16,8 @@ const isUserAuthenticated = async (
     if (!accessToken) {
       res.status(401).json({
         status: false,
-        error: "Unauthorized",
-        message: "Access token is required",
+        error: "UNAUTHORIZED",
+        message: "You must logged in to use this feature.",
       });
       return;
     }
@@ -26,7 +26,7 @@ const isUserAuthenticated = async (
       if (!process.env.JWT_SECRET) {
         res.status(401).json({
           status: false,
-          error: "Unauthorized",
+          error: "UNAUTHORIZED",
           message: "JWT_SECRET is not defined",
         });
         return;

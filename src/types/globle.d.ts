@@ -8,9 +8,13 @@ declare global {
   interface IChat extends Document {
     chatId: string;
     role: "user" | "assistant";
-    content: string;
+    // content: string;
+    content: {
+      content: string;
+      type: "text" | "image";
+      model: string;
+    }[];
     chatRoomId: string;
-    usedModel: string;
   }
 
   interface IChatRoom extends Document {
@@ -59,5 +63,11 @@ declare global {
     interface Request {
       user?: IUser;
     }
+  }
+
+
+  interface IMessage {
+    role: "user" | "assistant" | "system" | "function" | "tool";
+    content: string;
   }
 }
