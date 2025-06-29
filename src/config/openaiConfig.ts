@@ -18,61 +18,108 @@ const openai = new OpenAI({
 const SYSTEM_PROMPT =
   "You are a helpful assistant. pretent your self as MindMap.ai. This is your name or identity.";
 
+type Book = {
+  id: number;
+  title: string;
+  authors: any[];
+};
+
+async function searchGutenbergBooks(searchTerms: string[]): Promise<Book[]> {
+  const searchQuery = searchTerms.join(" ");
+  const url = "https://gutendex.com/books";
+  const response = await fetch(`${url}?search=${searchQuery}`);
+  const data = (await response.json()) as { results: any[] };
+
+  return data.results.map((book: any) => ({
+    id: book.id,
+    title: book.title,
+    authors: book.authors,
+  }));
+}
+
+const tools = [
+  {
+    type: "function" as const,
+    function: {
+      name: "searchGutenbergBooks",
+      description:
+        "Search for books in the Project Gutenberg library based on specified search terms",
+      parameters: {
+        type: "object",
+        properties: {
+          search_terms: {
+            type: "array",
+            items: {
+              type: "string",
+            },
+            description:
+              "List of search terms to find books in the Gutenberg library (e.g. ['dickens', 'great'] to search for books by Dickens with 'great' in the title)",
+          },
+        },
+        required: ["search_terms"],
+      },
+    },
+  },
+];
+
+const TOOL_MAPPING = {
+  searchGutenbergBooks,
+};
+
+import { ChatCompletionMessageParam } from "openai/resources/chat/completions";
+
+let messages: ChatCompletionMessageParam[] = [
+  {
+    role: "system",
+    content: SYSTEM_PROMPT,
+  },
+];
+
 async function generateAIResponse({
   query,
   prevResponse,
   model,
 }: IGenerateAIResponseParams) {
   try {
-    console.log(process.env.OPENROUTER_API_KEY);
-
-    const completion = await openai.chat.completions.create({
-      model: model ? model : "mistralai/mistral-small-3.1-24b-instruct:free",
-      messages: [
-        {
-          role: "system",
-          content: `${SYSTEM_PROMPT}  ${
-            prevResponse
-              ? `your previous response "${prevResponse}" Use the previous response as the context for the current conversation. 
-          Always refer to the previous response to maintain continuity and provide accurate and relevant answers. 
-          If the user asks a follow-up question, ensure your response aligns with the context established in the previous interaction.`
-              : ""
-          }`,
-        },
+    console.log("prevResponse: ", prevResponse);
+    if (prevResponse.length) {
+      messages.push(...JSON.parse(prevResponse));
+      messages.push({
+        role: "user",
+        content: query,
+      });
+    } else {
+      messages = [
         {
           role: "user",
-          content: `{ type: "user", user: "${query}" }`,
+          content: query,
         },
-      ],
-      // response_format: {
-      //   type: "json_schema",
-      //   json_schema: {
-      //     name: "llm-chat",
-      //     strict: true,
-      //     schema: {
-      //       type: "object",
-      //       properties: {
-      //         location: {
-      //           type: "string",
-      //           description: "City or location name",
-      //         },
-      //         temperature: {
-      //           type: "number",
-      //           description: "Temperature in Celsius",
-      //         },
-      //         conditions: {
-      //           type: "string",
-      //           description: "Weather conditions description",
-      //         },
-      //       },
-      //       required: ["location", "temperature", "conditions"],
-      //       additionalProperties: false,
-      //     },
-      //   },
-      // },
+      ];
+    }
+
+    const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model,
+        tools,
+        messages,
+      }),
     });
+
+    const completion = (await res.json()) as {
+      choices: Array<{
+        message: any;
+      }>;
+    };
+
     console.log("---Response---");
-    console.log(completion);
+    // console.log(completion);
+    console.log("message : ", completion.choices[0].message);
+    console.log("llm response : ", completion.choices[0].message.tool_calls);
     console.log("---Response---");
     return completion;
   } catch (error) {
@@ -81,6 +128,32 @@ async function generateAIResponse({
     console.log("---Error---");
   }
 }
+
+/* 
+
+const completion = await openai.chat.completions.create({
+      model: model ? model : "mistralai/mistral-small-3.1-24b-instruct:free",
+      // messages: [
+      //   {
+      //     role: "system",
+      //     content: `${SYSTEM_PROMPT}  ${
+      //       prevResponse
+      //         ? `your previous response "${prevResponse}" Use the previous response as the context for the current conversation.
+      //     Always refer to the previous response to maintain continuity and provide accurate and relevant answers.
+      //     If the user asks a follow-up question, ensure your response aligns with the context established in the previous interaction.`
+      //         : ""
+      //     }`,
+      //   },
+      //   {
+      //     role: "user",
+      //     content: `{ type: "user", user: "${query}" }`,
+      //   },
+      // ],
+      messages: messages,
+      tools: tools,
+    });
+
+*/
 
 // oepnai configure for generate image
 const client = new OpenAI({

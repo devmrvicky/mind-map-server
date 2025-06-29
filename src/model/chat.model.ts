@@ -4,13 +4,16 @@ const chatSchema: Schema<IChat> = new Schema(
   {
     chatId: { type: String, required: true, unique: true },
     role: { type: String, required: true, enum: ["user", "assistant"] },
-    content: { type: String, required: true },
+    // content: { type: String, required: true },
+    content: [
+      {
+        content: { type: String, required: true },
+        type: { type: String, required: true, enum: ["text", "image"] },
+        model: { type: String, required: true },
+      }
+    ],
     chatRoomId: { type: String, required: true },
-    // chatRoomId: {
-    //   type: mongoose.Schema.Types.ObjectId,
-    //   ref: "ChatRoom",
-    // },
-    usedModel: { type: String, required: true },
+    
   },
   { timestamps: true }
 );
