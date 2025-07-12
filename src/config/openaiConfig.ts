@@ -68,34 +68,21 @@ const TOOL_MAPPING = {
 
 import { ChatCompletionMessageParam } from "openai/resources/chat/completions";
 
-let messages: ChatCompletionMessageParam[] = [
-  {
-    role: "system",
-    content: SYSTEM_PROMPT,
-  },
-];
-
 async function generateAIResponse({
   query,
   prevResponse,
   model,
 }: IGenerateAIResponseParams) {
   try {
-    console.log("prevResponse: ", prevResponse);
-    if (prevResponse.length) {
+    console.log({ query, prevResponse, model });
+    let messages: ChatCompletionMessageParam[] = [
+      { role: "system", content: SYSTEM_PROMPT },
+    ];
+
+    if (prevResponse && JSON.parse(prevResponse).length) {
       messages.push(...JSON.parse(prevResponse));
-      messages.push({
-        role: "user",
-        content: query,
-      });
-    } else {
-      messages = [
-        {
-          role: "user",
-          content: query,
-        },
-      ];
     }
+    messages.push({ role: "user", content: query });
 
     const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
       method: "POST",
@@ -104,11 +91,17 @@ async function generateAIResponse({
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model,
+        model: model || "mistralai/mistral-small-3.1-24b-instruct:free",
         tools,
         messages,
       }),
     });
+
+    if (!res.ok) {
+      throw new Error(
+        `OpenRouter API error: ${res.status} ${await res.text()}`
+      );
+    }
 
     const completion = (await res.json()) as {
       choices: Array<{
@@ -118,8 +111,8 @@ async function generateAIResponse({
 
     console.log("---Response---");
     // console.log(completion);
-    console.log("message : ", completion.choices[0].message);
-    console.log("llm response : ", completion.choices[0].message.tool_calls);
+    console.log("message : ", completion);
+    // console.log("llm response : ", completion.choices[0].message.tool_calls);
     console.log("---Response---");
     return completion;
   } catch (error) {

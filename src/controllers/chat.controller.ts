@@ -37,6 +37,74 @@ const getChatResponse = async (req: Request, res: Response) => {
   }
 };
 
+// re-generate ai response
+const regenerateChatResponse = async (req: Request, res: Response) => {
+  const { chatId, query, prevResponse, model } = req.body;
+  const accessToken =
+    (req.cookies && req.cookies.accessToken) ||
+    (req.header && req.header("accessToken")?.replace("Bearer ", ""));
+  try {
+    if (!query) {
+      res.status(400).json({
+        status: false,
+        message: "query are required to regenerate response.",
+      });
+      return;
+    }
+
+    // generate AI response using OpenAI API
+    const aiResponse = await generateAIResponse({
+      query,
+      prevResponse,
+      model,
+    });
+    console.log({ regenerateAiResponse: aiResponse });
+    if (!aiResponse) {
+      res
+        .status(500)
+        .json({ status: false, message: "Failed to regenerate response" });
+      return;
+    }
+    console.log({ accessToken, chatId });
+    if (accessToken) {
+      if (!chatId) {
+        res.status(400).json({
+          status: false,
+          message: "Chat ID is required to regenerate response.",
+        });
+        return;
+      }
+      // Fetch the existing chat
+      const chat = await Chat.findById(chatId);
+      if (!chat) {
+        res.status(404).json({
+          status: false,
+          message: "Chat not found.",
+        });
+        return;
+      }
+      // Update the chat with the new response
+      chat.content.push({
+        content: aiResponse.choices?.[0].message?.content,
+        type: "text",
+        model: model,
+      });
+
+      await chat.save();
+    }
+    res.status(200).json({
+      message: "AI response regenerated successfully",
+      response: aiResponse,
+    });
+  } catch (error) {
+    console.error("Error regenerating AI response:", error);
+    res.status(500).json({
+      status: false,
+      message: error instanceof Error ? error.message : "Unknown error",
+    });
+  }
+};
+
 // get all chats
 const getChats = async (req: Request, res: Response): Promise<void> => {
   try {
@@ -88,6 +156,33 @@ const createChat = async (req: Request, res: Response): Promise<void> => {
       .json({ message: "Chat created successfully", chat: newChat });
   } catch (error) {
     console.error("Error creating chat:", error);
+    res.status(500).json({
+      status: false,
+      message: error instanceof Error ? error.message : "Unknown error",
+    });
+  }
+};
+
+// delete all chats in a chat room
+const deleteAllChatsInRoom = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  try {
+    const chatRoomId = req.params.chatRoomId;
+    if (!chatRoomId) {
+      res
+        .status(400)
+        .json({ status: false, message: "Chat room ID is required." });
+      return;
+    }
+    const result = await Chat.deleteMany({ chatRoomId });
+    res.status(200).json({
+      message: "All chats in the chat room deleted successfully.",
+      deletedCount: result.deletedCount,
+    });
+  } catch (error) {
+    console.error("Error deleting chats in chat room:", error);
     res.status(500).json({
       status: false,
       message: error instanceof Error ? error.message : "Unknown error",
@@ -152,6 +247,30 @@ const createChatRoom = async (req: Request, res: Response) => {
   }
 };
 
+// delete chat room
+const deleteChatRoom = async (req: Request, res: Response) => {
+  try {
+    const chatRoomId = req.params.chatRoomId;
+    if (!chatRoomId) {
+      res
+        .status(400)
+        .json({ status: false, message: "Chat room ID is required." });
+      return;
+    }
+    const deletedRoom = await ChatRoom.findOneAndDelete({ chatRoomId });
+    if (!deletedRoom) {
+      res.status(404).json({ status: false, message: "Chat room not found." });
+      return;
+    }
+    res.status(200).json({ message: "Chat room deleted successfully." });
+  } catch (error) {
+    console.error("Error deleting chat room:", error);
+    res.status(500).json({
+      status: false,
+      message: error instanceof Error ? error.message : "Unknown error",
+    });
+  }
+};
 
 // generate image controller
 const imageGenerate = async (req: Request, res: Response) => {
@@ -162,7 +281,7 @@ const imageGenerate = async (req: Request, res: Response) => {
         status: false,
         message: "Prompt is required to generate an image.",
       });
-      return 
+      return;
     }
 
     const imageResponse = await generateImageResponse({ prompt, model });
@@ -171,7 +290,7 @@ const imageGenerate = async (req: Request, res: Response) => {
         status: false,
         message: "Failed to generate image.",
       });
-      return 
+      return;
     }
 
     res.status(200).json({
@@ -188,4 +307,14 @@ const imageGenerate = async (req: Request, res: Response) => {
   }
 };
 
-export { createChat, createChatRoom, getChats, getChatRooms, getChatResponse, imageGenerate };
+export {
+  createChat,
+  createChatRoom,
+  getChats,
+  getChatRooms,
+  getChatResponse,
+  imageGenerate,
+  deleteChatRoom,
+  deleteAllChatsInRoom,
+  regenerateChatResponse,
+};
