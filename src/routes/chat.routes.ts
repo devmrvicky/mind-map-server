@@ -19,6 +19,7 @@ import {
   imageGenerate,
   deleteChatRoom,
   deleteAllChatsInRoom,
+  regenerateChatResponse,
 } from "../controllers/chat.controller";
 import { isUserAuthenticated } from "../middlewares/auth.middleware";
 import validateObjectId from "../middlewares/validateObjectId.middleware";
@@ -42,6 +43,9 @@ router.delete(
   isUserAuthenticated,
   deleteAllChatsInRoom
 );
+
+// regenerate ai response
+router.post("/regenerate", regenerateChatResponse);
 
 router.post("/image/generate", isUserAuthenticated, imageGenerate);
 

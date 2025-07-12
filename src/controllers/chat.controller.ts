@@ -37,6 +37,74 @@ const getChatResponse = async (req: Request, res: Response) => {
   }
 };
 
+// re-generate ai response
+const regenerateChatResponse = async (req: Request, res: Response) => {
+  const { chatId, query, prevResponse, model } = req.body;
+  const accessToken =
+    (req.cookies && req.cookies.accessToken) ||
+    (req.header && req.header("accessToken")?.replace("Bearer ", ""));
+  try {
+    if (!query) {
+      res.status(400).json({
+        status: false,
+        message: "query are required to regenerate response.",
+      });
+      return;
+    }
+
+    // generate AI response using OpenAI API
+    const aiResponse = await generateAIResponse({
+      query,
+      prevResponse,
+      model,
+    });
+    console.log({ regenerateAiResponse: aiResponse });
+    if (!aiResponse) {
+      res
+        .status(500)
+        .json({ status: false, message: "Failed to regenerate response" });
+      return;
+    }
+    console.log({ accessToken, chatId });
+    if (accessToken) {
+      if (!chatId) {
+        res.status(400).json({
+          status: false,
+          message: "Chat ID is required to regenerate response.",
+        });
+        return;
+      }
+      // Fetch the existing chat
+      const chat = await Chat.findById(chatId);
+      if (!chat) {
+        res.status(404).json({
+          status: false,
+          message: "Chat not found.",
+        });
+        return;
+      }
+      // Update the chat with the new response
+      chat.content.push({
+        content: aiResponse.choices?.[0].message?.content,
+        type: "text",
+        model: model,
+      });
+
+      await chat.save();
+    }
+    res.status(200).json({
+      message: "AI response regenerated successfully",
+      response: aiResponse,
+    });
+  } catch (error) {
+    console.error("Error regenerating AI response:", error);
+    res.status(500).json({
+      status: false,
+      message: error instanceof Error ? error.message : "Unknown error",
+    });
+  }
+};
+
 // get all chats
 const getChats = async (req: Request, res: Response): Promise<void> => {
   try {
@@ -248,4 +316,5 @@ export {
   imageGenerate,
   deleteChatRoom,
   deleteAllChatsInRoom,
+  regenerateChatResponse,
 };
