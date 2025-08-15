@@ -9,7 +9,7 @@ import { ChatRoom } from "../model/chatRoom.model";
 // generate AI response
 const getChatResponse = async (req: Request, res: Response) => {
   try {
-    const { query, prevResponse, model } = req.body;
+    const { query, prevResponse, model, fileUrls } = req.body;
     if (!query) {
       res
         .status(400)
@@ -17,7 +17,12 @@ const getChatResponse = async (req: Request, res: Response) => {
       return;
     }
     // generate AI response using OpenAI API
-    const aiResponse = await generateAIResponse({ query, prevResponse, model });
+    const aiResponse = await generateAIResponse({
+      query,
+      prevResponse,
+      model,
+      fileUrls,
+    });
     if (!aiResponse) {
       res
         .status(500)
@@ -39,7 +44,7 @@ const getChatResponse = async (req: Request, res: Response) => {
 
 // re-generate ai response
 const regenerateChatResponse = async (req: Request, res: Response) => {
-  const { chatId, query, prevResponse, model } = req.body;
+  const { chatId, query, prevResponse, model, fileUrls } = req.body;
   const accessToken =
     (req.cookies && req.cookies.accessToken) ||
     (req.header && req.header("accessToken")?.replace("Bearer ", ""));
@@ -57,6 +62,7 @@ const regenerateChatResponse = async (req: Request, res: Response) => {
       query,
       prevResponse,
       model,
+      fileUrls,
     });
     console.log({ regenerateAiResponse: aiResponse });
     if (!aiResponse) {
@@ -128,7 +134,7 @@ const getChats = async (req: Request, res: Response): Promise<void> => {
 // create chat
 const createChat = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { content, usedModel, chatId, role } = req.body;
+    const { content, usedModel, chatId, role, fileUrls } = req.body;
     const chatRoomId = req.params.chatRoomId; // get chat room id from params
     console.log({ content, usedModel, chatId, role, chatRoomId });
     if (!content || !usedModel || !chatId || !chatRoomId || !role) {
@@ -144,6 +150,7 @@ const createChat = async (req: Request, res: Response): Promise<void> => {
       role: role,
       content: [
         {
+          fileUrls: fileUrls.length ? JSON.parse(fileUrls) : [], // optional field for file URLs
           content,
           type: "text", // assuming the content is text, can be changed based on requirements
           model: usedModel,

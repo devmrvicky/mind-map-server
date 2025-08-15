@@ -39,5 +39,8 @@ app.use("/api/auth", authRoutes);
 import userRoutes from "./routes/user.routes";
 app.use("/api/user", userRoutes);
 
+// imaekit routes
+import imagekitRoutes from "./routes/imagekit.routes";
+app.use("/api/imagekit", imagekitRoutes);
 
 export default app;

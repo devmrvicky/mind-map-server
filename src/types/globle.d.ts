@@ -1,5 +1,4 @@
 import { Document, mongo } from "mongoose";
-import OpenAI from "openai";
 import { Response, Request } from "express";
 
 export { IUser, IChatRoom };
@@ -48,6 +47,7 @@ declare global {
     query: string;
     prevResponse: string;
     model?: string;
+    fileUrls?: string[];
   }
 
   // async function generateAIResponse<IGenerateAIResponseParams>(
@@ -64,7 +64,6 @@ declare global {
       user?: IUser;
     }
   }
-
 
   interface IMessage {
     role: "user" | "assistant" | "system" | "function" | "tool";
