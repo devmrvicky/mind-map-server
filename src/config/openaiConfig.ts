@@ -72,9 +72,10 @@ async function generateAIResponse({
   query,
   prevResponse,
   model,
+  fileUrls,
 }: IGenerateAIResponseParams) {
   try {
-    console.log({ query, prevResponse, model });
+    // console.log({ query, prevResponse, model, fileUrl });
     let messages: ChatCompletionMessageParam[] = [
       { role: "system", content: SYSTEM_PROMPT },
     ];
@@ -82,7 +83,36 @@ async function generateAIResponse({
     if (prevResponse && JSON.parse(prevResponse).length) {
       messages.push(...JSON.parse(prevResponse));
     }
-    messages.push({ role: "user", content: query });
+    if (fileUrls?.length) {
+      console.log("fileUrl : ", fileUrls);
+      messages.push({
+        role: "user",
+        content: [
+          {
+            type: "text",
+            text: query,
+          },
+          {
+            type: "image_url",
+            image_url: {
+              url: fileUrls[0],
+            },
+          },
+        ],
+      });
+    } else {
+      messages.push({
+        role: "user",
+        content: [
+          {
+            type: "text",
+            text: query,
+          },
+        ],
+      });
+    }
+    console.log({ messages });
+    // return;
 
     const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
       method: "POST",
@@ -91,7 +121,9 @@ async function generateAIResponse({
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: model || "mistralai/mistral-small-3.1-24b-instruct:free",
+        model: "mistralai/mistral-small-3.2-24b-instruct:free",
+        // model: "google/gemini-2.0-flash-001",
+        // model: model || "mistralai/mistral-small-3.1-24b-instruct:free",
         tools,
         messages,
       }),
