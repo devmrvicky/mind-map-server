@@ -121,9 +121,12 @@ async function generateAIResponse({
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "mistralai/mistral-small-3.2-24b-instruct:free",
-        // model: "google/gemini-2.0-flash-001",
-        // model: model || "mistralai/mistral-small-3.1-24b-instruct:free",
+        model: model || "mistralai/mistral-small-3.2-24b-instruct:free",
+        models: [
+          "deepseek/deepseek-r1-0528:free",
+          "deepseek/deepseek-r1:free",
+          "google/gemma-3-12b-it:free",
+        ],
         tools,
         messages,
       }),
