@@ -44,10 +44,10 @@ declare global {
   }
 
   interface IGenerateAIResponseParams {
-    query: string;
-    prevResponse: string;
+    prompt: string;
     model?: string;
     fileUrls?: string[];
+    stream?: boolean;
   }
 
   // async function generateAIResponse<IGenerateAIResponseParams>(
@@ -62,6 +62,7 @@ declare global {
   namespace Express {
     interface Request {
       user?: IUser;
+      validated?: unknown;
     }
   }
 

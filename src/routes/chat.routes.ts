@@ -1,52 +1,53 @@
-/*
-  POST: /api/chat
-    - Create a new chat message (ROLE: user) and save in db
-    - generate a response (ROLE: assistant) using OpenAI API and again save it in db.
-
-  POST: /api/chat/room
-    - Create a new chat room and save in db (if not exists)
-*/
-
-import express, { Request, Response } from "express";
-
-const router = express.Router();
+import express from "express";
 import {
   createChat,
-  createChatRoom,
   getChats,
-  getChatRooms,
-  getChatResponse,
-  imageGenerate,
-  deleteChatRoom,
   deleteAllChatsInRoom,
-  regenerateChatResponse,
 } from "../controllers/chat.controller";
+import {
+  generateText,
+  generateStreamText,
+} from "../controllers/llm.controller";
 import { isUserAuthenticated } from "../middlewares/auth.middleware";
-import validateObjectId from "../middlewares/validateObjectId.middleware";
+import {
+  createChatSchema,
+  getChatsSchema,
+  deleteAllChatsInRoomSchema,
+} from "../validations/chat.validation";
+import {
+  generateTextSchema,
+  generateStreamSchema,
+} from "../validations/llm.validation";
+import { validateSchema } from "../middlewares/validate.middleware";
 
-// this router will get all chat rooms for a specific user
-router.get("/room", isUserAuthenticated, getChatRooms);
-// this router will create a new chat room and save it in db
-router.post("/room/create", isUserAuthenticated, createChatRoom);
-// this router will delete a chat room by its ID
-router.delete("/room/delete/:chatRoomId", isUserAuthenticated, deleteChatRoom);
-// this router will get all chats for a specific chat room
-router.get("/:chatRoomId", getChats);
-// this router will generate AI response using OpenAI and openrouter API
-router.post("/generate", getChatResponse);
-// this router will create a new chat (with role: user or assistant) and save it in db
-router.post("/create/:chatRoomId", createChat);
+const router = express.Router();
 
-// this router will delete all chats in a chat room
+// generate AI response using OpenRouter
+router.post("/generate", validateSchema(generateTextSchema), generateText);
+
+// generate stream response
+router.get(
+  "/stream-generate",
+  validateSchema(generateStreamSchema),
+  generateStreamText
+);
+
+// create a new chat (user or assistant) in a room
+router.post(
+  "/create/:chatRoomId",
+  validateSchema(createChatSchema),
+  createChat
+);
+
+// get all chats for a specific chat room
+router.get("/:chatRoomId", validateSchema(getChatsSchema), getChats);
+
+// delete all chats in a chat room
 router.delete(
   "/all/delete/:chatRoomId",
   isUserAuthenticated,
+  validateSchema(deleteAllChatsInRoomSchema),
   deleteAllChatsInRoom
 );
-
-// regenerate ai response
-router.post("/regenerate", regenerateChatResponse);
-
-router.post("/image/generate", isUserAuthenticated, imageGenerate);
 
 export default router;

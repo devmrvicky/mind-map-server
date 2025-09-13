@@ -1,26 +1,21 @@
 import mongoose from "mongoose";
-import dotenv from "dotenv";
-
-dotenv.config({
-  path: "../.env",
-});
+import { env } from "../env/env";
+import { exit } from "process";
+import { logger } from "../config/logger.config";
 
 async function connectDB() {
   try {
-    console.log(process.env.MONGODB_URI);
-    if (!process.env.MONGODB_URI) {
+    console.log(env.MONGODB_URI);
+    if (!env.MONGODB_URI) {
       throw new Error("MONGODB_URI is not defined in .env file");
     }
-    // const connectionIntance = await mongoose.connect(
-    //   `mongodb+srv://devmrvicky:nF1qvzQtjdXAD7GN@llm-chat-cluster0.zia4i0u.mongodb.net/llm-chat` as string
-    // );
     const connectionIntance = await mongoose.connect(
-      `${process.env.MONGODB_URI}/llm-chat`
+      `${env.MONGODB_URI}/llm-chat`
     );
-    console.log(`MongoDB connected: ${connectionIntance.connection.host}`);
+    logger.info(`MongoDB connected: ${connectionIntance.connection.host}`);
   } catch (error) {
-    console.error("MongoDB connection error:", error);
-    process.exit(1);
+    logger.error("MongoDB connection error:", error);
+    exit(1);
   }
 }
 

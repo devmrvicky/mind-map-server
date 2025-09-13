@@ -4,11 +4,26 @@ import axios from "axios";
 import generateTokens from "../utils/generateTokens";
 import { createdUserDocForSignupWithGoogle } from "./user.controller";
 import { Response, Request } from "express";
+import {
+  OAuthCallbackInput,
+  OAuthRedirectInput,
+} from "../validations/OAuth.validation";
+import { errorHandler, ErrorResponse } from "../handlers/handleErrorResponse";
+import {
+  SuccessResponse,
+  successHandler,
+} from "../handlers/handleSuccessResponse";
+import { env } from "../env/env";
+import { GoogleRegisterInput } from "../validations/user.validation";
+import { logger } from "../config/logger.config";
 
 // const API_ENDPOINT = 'https://www.googleapis.com/oauth2/v1/userinfo?alt=json';
 
 // This function is used to redirect the user to the google auth url.
-const redirectGoogleAuthUrl = async (req: Request, res: Response) => {
+const redirectGoogleAuthUrl = async (
+  req: Request<OAuthRedirectInput>,
+  res: Response<SuccessResponse<{ url: string }> | ErrorResponse>
+): Promise<void> => {
   const OAuth2Url = getAuthUrl([
     "https://www.googleapis.com/auth/userinfo.profile",
     "https://www.googleapis.com/auth/userinfo.email",
@@ -18,27 +33,21 @@ const redirectGoogleAuthUrl = async (req: Request, res: Response) => {
     "https://www.googleapis.com/auth/user.gender.read",
     "https://www.googleapis.com/auth/user.phonenumbers.read",
   ]);
-  res.status(200).json({
-    status: true,
-    message: "Redirected OAuthUrl successfully",
-    OAuth2Url,
-  });
+  res.status(200).json(successHandler.create("OK", { url: OAuth2Url }));
 };
 
 // This function is used to get the user details from google and create a new user or login the user
 const getUserDetailsAndCreateUserOrLogin = async (
   req: Request,
-  res: Response
-) => {
+  res: Response<SuccessResponse<any> | ErrorResponse>
+): Promise<void> => {
   try {
-    const { code }: { code: string } = req.body;
+    const validate = (req as any).validated as OAuthCallbackInput;
+    const { code } = validate.body;
     // console.log({ googleAuthCode: code });
     if (!code) {
-      res.status(400).json({
-        status: false,
-        error: "Bad Request",
-        message: "Google auth code is required",
-      });
+      logger.error("Google Auth code is missing in request body");
+      res.status(400).json(errorHandler.missingField("Google auth code"));
       return;
     }
     const { tokens } = await Oauth2Client.getToken(code);
@@ -46,15 +55,13 @@ const getUserDetailsAndCreateUserOrLogin = async (
     Oauth2Client.setCredentials(tokens);
     const access_token = tokens.access_token;
     // console.log("access_token: ", tokens.access_token);
-    if (!process.env.GOOGLEAPI_URL) {
-      res.status(404).json({
-        status: false,
-        message: "GOOGLEAPI_URL is not defined in the environment variables",
-      });
+    if (!env.GOOGLEAPI_URL) {
+      logger.error("GOOGLEAPI_URL is not defined in environment variables");
+      res.status(400).json(errorHandler.missingField("GOOGLEAPI_URL"));
       return;
     }
     // console.log("google api url: ", process.env.GOOGLEAPI_URL);
-    const response = await axios.get(process.env.GOOGLEAPI_URL, {
+    const response = await axios.get(env.GOOGLEAPI_URL, {
       headers: {
         Authorization: `Bearer ${access_token}`,
       },
@@ -66,18 +73,16 @@ const getUserDetailsAndCreateUserOrLogin = async (
     const userData = response.data;
 
     if (!userData) {
-      // console.log("user data did not get.");
-      res
-        .status(4040)
-        .json({ status: false, message: "user data did not get." });
+      logger.error("User data not found from google");
+      res.status(404).json(errorHandler.notFound("user data from google"));
       return;
     }
     const { year, month, day } = userData.birthdays[0]?.date;
-    const userDetails: Partial<IUser> = {
+    const userDetails: GoogleRegisterInput = {
       name: userData.names[0]?.displayName || null,
       email: userData.emailAddresses[0]?.value || null,
       profilePic: userData.photos[0]?.url || null,
-      dob: `${day}/${month}/${year}` || "", // { year, month, day }
+      dob: `${day}/${month}/${year}` || null,
       authType: "google",
       password: "undefined",
     };
@@ -88,11 +93,8 @@ const getUserDetailsAndCreateUserOrLogin = async (
     const user = await createdUserDocForSignupWithGoogle(userDetails);
     // console.log("user from database:=> ", user);
     if (!user) {
-      res.status(500).json({
-        status: false,
-        error: "server error",
-        message: "Did not create user?",
-      });
+      logger.error("User not found or created");
+      res.status(500).json(errorHandler.serverError("user not found"));
       return;
     }
     const { accessToken } = await generateTokens(user);
@@ -101,16 +103,24 @@ const getUserDetailsAndCreateUserOrLogin = async (
       .status(200)
       .cookie("accessToken", accessToken, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === "PRODUCTION",
-        sameSite: process.env.NODE_ENV === "PRODUCTION" ? "none" : "lax",
+        secure: env.NODE_ENV === "PRODUCTION",
+        sameSite: env.NODE_ENV === "PRODUCTION" ? "none" : "lax",
       })
-      .json({ status: true, message: "User logged in successfully", user });
+      .json(
+        successHandler.create("User logged in successfully", {
+          user,
+          accessToken,
+        })
+      );
   } catch (error) {
-    console.error("error while fatching user detail " + error);
-    res.status(500).json({
-      status: false,
-      message: error instanceof Error ? error.message : "Unknown error",
-    });
+    logger.error("error while fatching user detail " + error);
+    res
+      .status(500)
+      .json(
+        errorHandler.serverError(
+          error instanceof Error ? error.message : "Unknown error"
+        )
+      );
   }
 };
 

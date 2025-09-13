@@ -1,34 +1,21 @@
 import express from "express";
-import {
-  getUser,
-  //   signupUser,
-  //   loginUserWithEmail,
-  logoutUser,
-  //   deleteUser,
-  //   updateUser,
-  //   updateOrResetPassword,
-  //   checkAccessToken,
-} from "../controllers/user.controller";
-// import { isEmailVerify } from "../middlewares/email.middlewares.js";
+import { getUser, logoutUser } from "../controllers/user.controller";
 import { isUserAuthenticated } from "../middlewares/auth.middleware";
-// import { getUser } from "../controllers/user.controller";
+import { validateSchema } from "../middlewares/validate.middleware";
+import {
+  getUserSchema,
+  logoutUserSchema,
+} from "../validations/user.validation";
 
 const router = express.Router();
 
-router.get("/", isUserAuthenticated, getUser);
-// // Define a POST route for user signup
-// router.post("/signup", isEmailVerify, signupUser);
-// // define a POST route for user login
-// router.post("/loginWithEmail", loginUserWithEmail);
+router.get("/", isUserAuthenticated, validateSchema(getUserSchema), getUser);
 // // route for logout
-router.post("/logout", isUserAuthenticated, logoutUser);
-// // route for delete user
-// router.delete("/deleteUser", isUserAuthenticated, deleteUser);
-// // route for update user
-// router.put("/updateUser", isUserAuthenticated, updateUser);
-// // route for reset password
-// router.put("/reset-password", isEmailVerify, updateOrResetPassword);
-// // route for access token validation
-// router.get("/checkValidation", checkAccessToken);
+router.post(
+  "/logout",
+  isUserAuthenticated,
+  validateSchema(logoutUserSchema),
+  logoutUser
+);
 
 export default router;

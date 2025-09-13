@@ -1,45 +1,53 @@
 import jwt from "jsonwebtoken";
 import { Request, Response, NextFunction } from "express";
 import { User } from "../model/user.model";
+import { env } from "../env/env";
+import { errorHandler, ErrorResponse } from "../handlers/handleErrorResponse";
+import { logger } from "../config/logger.config";
 
 const isUserAuthenticated = async (
   req: Request,
-  res: Response,
+  res: Response<ErrorResponse>,
   next: NextFunction
-) => {
+): Promise<void> => {
   try {
-    console.log(req.cookies);
     const accessToken =
       (req.cookies && req.cookies.accessToken) ||
       (req.header && req.header("accessToken")?.replace("Bearer ", ""));
-    console.log("accessToken:=> ", accessToken);
+    logger.log("accessToken:=> ", accessToken);
     if (!accessToken) {
-      res.status(401).json({
-        status: false,
-        error: "UNAUTHORIZED",
-        message: "You must logged in to use this feature.",
-      });
+      logger.error("Access token is missing in request");
+      res
+        .status(401)
+        .json(
+          errorHandler.authError("Access token is missing. Please log in.")
+        );
       return;
     }
     let decodedData: null | jwt.JwtPayload | string;
     try {
-      if (!process.env.JWT_SECRET) {
-        res.status(401).json({
-          status: false,
-          error: "UNAUTHORIZED",
-          message: "JWT_SECRET is not defined",
-        });
+      if (!env.JWT_SECRET) {
+        logger.error("JWT_SECRET is not defined in environment variables.");
+        res
+          .status(401)
+          .json(
+            errorHandler.notFound(
+              "JWT_SECRET is not defined in environment variables."
+            )
+          );
         return;
       }
-      // decodedData = jwt.verify(accessToken, process.env.JWT_SECRET);
+      // decodedData = jwt.verify(accessToken, env.JWT_SECRET);
       decodedData = jwt.decode(accessToken);
-      console.log(decodedData);
     } catch (error) {
-      res.status(401).json({
-        status: false,
-        error: "Unauthorized",
-        message: "Invalid access token",
-      });
+      logger.error("Invalid access token: " + error);
+      res
+        .status(401)
+        .json(
+          errorHandler.authError(
+            error instanceof Error ? error.message : "Invalid access token."
+          )
+        );
       return;
     }
     if (
@@ -47,28 +55,31 @@ const isUserAuthenticated = async (
       !decodedData ||
       !("id" in decodedData)
     ) {
-      res.status(401).json({
-        status: false,
-        error: "Unauthorized",
-        message: "Invalid access token payload",
-      });
+      logger.error("Invalid access token payload");
+      res
+        .status(401)
+        .json(errorHandler.authError("Invalid access token payload"));
       return;
     }
     const user = await User.findById(decodedData.id);
     if (!user) {
-      res.status(401).json({
-        status: false,
-        error: "Unauthorized",
-        message: "User not found",
-      });
+      logger.error("user did not found in database");
+      res.status(401).json(errorHandler.authError("user didn't found."));
       return;
     }
     req.user = user; // Assign the user to the extended Request object
     next();
   } catch (error) {
+    logger.error("Error in authentication middleware: " + error);
     const errorMessage =
       error instanceof Error ? error.message : "An unknown error occurred";
-    res.status(500).json({ status: false, message: errorMessage });
+    res
+      .status(500)
+      .json(
+        errorHandler.serverError(
+          error instanceof Error ? error.message : "An unknown error occurred"
+        )
+      );
   }
 };
 
