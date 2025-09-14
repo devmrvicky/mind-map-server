@@ -4,33 +4,15 @@ import {
   getChats,
   deleteAllChatsInRoom,
 } from "../controllers/chat.controller";
-import {
-  generateText,
-  generateStreamText,
-} from "../controllers/llm.controller";
 import { isUserAuthenticated } from "../middlewares/auth.middleware";
 import {
   createChatSchema,
   getChatsSchema,
   deleteAllChatsInRoomSchema,
 } from "../validations/chat.validation";
-import {
-  generateTextSchema,
-  generateStreamSchema,
-} from "../validations/llm.validation";
 import { validateSchema } from "../middlewares/validate.middleware";
 
 const router = express.Router();
-
-// generate AI response using OpenRouter
-router.post("/generate", validateSchema(generateTextSchema), generateText);
-
-// generate stream response
-router.get(
-  "/stream-generate",
-  validateSchema(generateStreamSchema),
-  generateStreamText
-);
 
 // create a new chat (user or assistant) in a room
 router.post(

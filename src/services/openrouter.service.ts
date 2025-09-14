@@ -1,6 +1,7 @@
 import { ChatCompletionMessageParam } from "openai/resources/chat";
 import { openrouter } from "../config/openrouter.config";
 import { getPrevResponses } from "../utils/handlePrevResponse";
+import { logger } from "../config/logger.config";
 
 class OpenRouter {
   private SYSTEM_PROMPT: string;
@@ -16,7 +17,7 @@ class OpenRouter {
     prompt,
     model,
     fileUrls,
-    stream = false
+    stream = false,
   }: IGenerateAIResponseParams) {
     let messages: ChatCompletionMessageParam[] = [
       { role: "system", content: this.SYSTEM_PROMPT },
@@ -26,7 +27,6 @@ class OpenRouter {
       messages.push(...this.prevResponse);
     }
     if (fileUrls && fileUrls.length) {
-      console.log("fileUrl from : ", fileUrls);
       messages.push({
         role: "user",
         content: [
@@ -55,7 +55,7 @@ class OpenRouter {
     }
 
     try {
-      const res = await openrouter.post("/api/v1/chat/completions", {
+      const res = await openrouter.post("/chat/completions", {
         model: model || "mistralai/mistral-small-3.2-24b-instruct:free",
         models: [
           "deepseek/deepseek-r1-0528:free",
@@ -64,14 +64,12 @@ class OpenRouter {
         ],
         // tools,
         messages,
-        stream
+        stream,
       });
-      return res
+      return res;
     } catch (error) {
-      throw new Error(error instanceof  Error ? error.message : "unknown error")
+      throw new Error(error instanceof Error ? error.message : "unknown error");
     }
-
-
   }
 
   async getTextResponse({
@@ -80,27 +78,21 @@ class OpenRouter {
     fileUrls,
   }: IGenerateAIResponseParams) {
     try {
-      const res = await this.getOpenrouterRes({prompt, model, fileUrls})
-      if (res.status !== 200) throw new Error("Unable to generate response.");
+      const res = await this.getOpenrouterRes({ prompt, model, fileUrls });
 
-      const completion = res.data;
-
-      console.log("---Response---");
-      // console.log(completion);
-      console.log("message : ", completion);
-      // // console.log("llm response : ", completion.choices[0].message.tool_calls);
-      console.log("---Response---");
-      return completion;
+      logger.info("---Response---");
+      // logger.log(completion);
+      logger.log("message : ", res);
+      logger.info("---Response---");
+      return res;
       // return false;
     } catch (error) {
-      console.log("---Error---");
-      console.error("Error generating response:", error);
-      console.log("---Error---");
+      logger.info("---Error---");
+      logger.error("Error generating response:", error);
+      logger.info("---Error---");
       throw new Error(error instanceof Error ? error.message : "Unknown error");
     }
   }
 }
-  
-
 
 export const openRouterService = new OpenRouter();

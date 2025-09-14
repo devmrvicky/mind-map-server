@@ -1,10 +1,10 @@
 import axios, { AxiosInstance } from "axios";
 import { env } from "../env/env";
-import {logger} from "./logger.config"
+import { logger } from "./logger.config";
 
 export const openrouter: AxiosInstance = axios.create({
   baseURL: env.OPENROUTER_BASE_URL, // OpenRouter API base
-  timeout: 15000, // 15s timeout
+  // timeout: 15000, // 15s timeout
   headers: {
     "Content-Type": "application/json",
     Authorization: `Bearer ${env.OPENROUTER_API_KEY}`, // API Key

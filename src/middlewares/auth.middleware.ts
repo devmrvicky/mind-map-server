@@ -14,7 +14,6 @@ const isUserAuthenticated = async (
     const accessToken =
       (req.cookies && req.cookies.accessToken) ||
       (req.header && req.header("accessToken")?.replace("Bearer ", ""));
-    logger.log("accessToken:=> ", accessToken);
     if (!accessToken) {
       logger.error("Access token is missing in request");
       res

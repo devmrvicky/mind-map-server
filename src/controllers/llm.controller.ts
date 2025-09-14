@@ -23,7 +23,7 @@ export const generateText = async (
   try {
     const validate = (req as any).validated as GenerateTextInput;
     const { prompt, usedModel, fileUrls } = validate.body;
-
+    logger.info("body", { prompt, usedModel, fileUrls });
     if (!prompt) {
       logger.error("prompt is missing in request");
       res
@@ -96,7 +96,7 @@ export const generateStreamText = async (
   const response = await openRouterService.getOpenrouterRes({
     prompt,
     model: usedModel,
-    fileUrls,
+    fileUrls: fileUrls ? JSON.parse(fileUrls) : [],
     stream: true,
   });
 

@@ -18,8 +18,8 @@ export const getChatRooms = async (
   res: Response<SuccessResponse<IChatRoom[]> | ErrorResponse>
 ): Promise<void> => {
   try {
-    const validated = (req as any).validated as GetChatRoomInput;
-    const userId = validated._id;
+    const validate = (req as any).validated as GetChatRoomInput;
+    const userId = validate.user._id;
     if (!userId) {
       logger.error("User ID missing in request");
       res
@@ -112,7 +112,7 @@ export const deleteChatRoom = async (
 ): Promise<void> => {
   try {
     const validate = (req as any).validated as DeleteChatRoomInput;
-    const chatRoomId = validate.chatRoomId;
+    const {chatRoomId} = validate.params;
     if (!chatRoomId) {
       logger.error("chatRoomId missing in request");
       res

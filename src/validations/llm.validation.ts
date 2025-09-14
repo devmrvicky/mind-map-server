@@ -3,7 +3,7 @@ import { z } from "zod";
 export const generateTextSchema = z.object({
   body: z.object({
     prompt: z.string().min(1),
-    usedModel: z.string().min(1),
+    usedModel: z.string().min(1).optional(),
     fileUrls: z.string().optional(), // JSON string or omit
   }),
 });
@@ -14,14 +14,14 @@ export const generateStreamSchema = z.object({
   }),
   body: z.object({
     usedModel: z.string().min(1),
-    fileUrls: z.array(z.string()).optional(),
+    fileUrls: z.string().optional(),
   }),
 });
 
 export const generateImageSchema = z.object({
   body: z.object({
     prompt: z.string().min(1),
-    model: z.string().min(1),
+    model: z.string().min(1).optional(),
   }),
 });
 

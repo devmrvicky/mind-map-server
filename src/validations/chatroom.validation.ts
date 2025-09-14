@@ -1,34 +1,31 @@
 import { z } from "zod";
+import { objectIdSchema } from "./objectIdSchema"
 
 export const createChatRoomSchema = z.object({
   body: z.object({
     chatRoomName: z.string(),
     // client generates UUID for chatRoomId (optional on create)
-    chatRoomId: z.string().uuid().optional(),
+    chatRoomId: z.string(),
   }),
   user: z.object({
-    _id: z.string().regex(/^[0-9a-fA-F]{24}$/, {
-      message: "_id must be a valid MongoDB ObjectId",
-    }),
+    _id: objectIdSchema,
   }),
 });
 
 export const getChatRoomSchema = z.object({
   user: z.object({
-    _id: z.string().regex(/^[0-9a-fA-F]{24}$/, {
-      message: "_id must be a valid MongoDB ObjectId",
-    }),
+    _id: objectIdSchema,
   }),
 });
 
 export const deleteChatRoomSchema = z.object({
   params: z.object({
-    chatRoomId: z.string().uuid(),
+    chatRoomId: z.string(),
   }),
 });
 
 export type CreateChatRoomInput = z.infer<typeof createChatRoomSchema>;
-export type GetChatRoomInput = z.infer<typeof getChatRoomSchema>["user"];
+export type GetChatRoomInput = z.infer<typeof getChatRoomSchema>;
 export type DeleteChatRoomInput = z.infer<
   typeof deleteChatRoomSchema
->["params"];
+>;

@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { objectIdSchema } from "./objectIdSchema"
 
 export const googleRegisterSchema = z.object({
   name: z.string().min(1).optional().nullable(),
@@ -28,9 +29,7 @@ export const loginSchema = z.object({
 // mongodb _id
 export const getUserSchema = z.object({
   user: z.object({
-    _id: z.string().regex(/^[0-9a-fA-F]{24}$/, {
-      message: "_id must be a valid MongoDB ObjectId",
-    }),
+    _id: objectIdSchema,
   }),
 });
 

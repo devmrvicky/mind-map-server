@@ -14,9 +14,11 @@ import { env } from "./env/env";
 
 // routes
 import chatRoutes from "./routes/chat.routes";
+import chatroomRoutes from "./routes/chatroom.routes";
 import authRoutes from "./routes/OAuth.routes";
 import userRoutes from "./routes/user.routes";
 import imagekitRoutes from "./routes/imagekit.routes";
+import llmRoutes from "./routes/llm.routes";
 import {
   serverErrorHandler,
   routeNotFound,
@@ -54,9 +56,11 @@ app.get("/test", (req, res) => {
 
 // routes
 app.use("/api/chat", chatRoutes);
+app.use("/api/chatroom", chatroomRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/user", userRoutes);
 app.use("/api/imagekit", imagekitRoutes);
+app.use("/api/llm", llmRoutes);
 
 // Error handling
 app.use(routeNotFound);
