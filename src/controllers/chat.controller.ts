@@ -10,7 +10,7 @@ import {
   SuccessResponse,
   successHandler,
 } from "../handlers/handleSuccessResponse";
-import {logger} from "../config/logger.config"
+import { logger } from "../config/logger.config";
 
 // get all chats
 export const getChats = async (
@@ -23,7 +23,7 @@ export const getChats = async (
       | undefined;
     const chatRoomId = validated?.params?.chatRoomId ?? req.params.chatRoomId; // get chat room id from params
     if (!chatRoomId) {
-      logger.error("chat room id is required to get chats")
+      logger.error("chat room id is required to get chats");
       res
         .status(400)
         .json(errorHandler.missingField("chatRoomId") as ErrorResponse);
@@ -31,6 +31,7 @@ export const getChats = async (
     }
     // get all chats for the given chat room id
     const chats = await Chat.find({ chatRoomId });
+
     res
       .status(200)
       .json(
@@ -56,7 +57,9 @@ export const createChat = async (
     const { chatRoomId } = params;
     const { prompt, usedModel, chatId, role, fileUrls } = body;
     if (!prompt || !usedModel || !chatId || !chatRoomId || !role) {
-      logger.error("prompt, usedModel, chatId, role, or chatRoomId missing in request");
+      logger.error(
+        "prompt, usedModel, chatId, role, or chatRoomId missing in request"
+      );
       res
         .status(400)
         .json(
@@ -80,6 +83,7 @@ export const createChat = async (
       ],
       chatRoomId: chatRoomId,
     });
+
     res
       .status(201)
       .json(successHandler.create("Chat created successfully", newChat));
@@ -107,7 +111,7 @@ export const deleteAllChatsInRoom = async (
       | undefined;
     const chatRoomId = validated?.params?.chatRoomId ?? req.params.chatRoomId;
     if (!chatRoomId) {
-      logger.error("chatRoomId is required to delete all chats in a chat room")
+      logger.error("chatRoomId is required to delete all chats in a chat room");
       res
         .status(400)
         .json(
@@ -118,11 +122,12 @@ export const deleteAllChatsInRoom = async (
       return;
     }
     const result = await Chat.deleteMany({ chatRoomId });
-    res
-      .status(200)
-      .json(
-        successHandler.create("Chats deleted successfully", result.deletedCount)
-      );
+
+    res.status(200).json(
+      successHandler.create("Chats deleted successfully", {
+        deletedCount: result.deletedCount,
+      })
+    );
   } catch (error) {
     logger.error("Error deleting chats in chat room:", error);
     res

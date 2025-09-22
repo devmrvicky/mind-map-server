@@ -22,8 +22,7 @@ export const generateText = async (
 ): Promise<void> => {
   try {
     const validate = (req as any).validated as GenerateTextInput;
-    const { prompt, usedModel, fileUrls } = validate.body;
-    logger.info("body", { prompt, usedModel, fileUrls });
+    const { prompt, model, fileUrls, prevResponses } = validate.body;
     if (!prompt) {
       logger.error("prompt is missing in request");
       res
@@ -34,8 +33,9 @@ export const generateText = async (
 
     const aiResponse = await openRouterService.getTextResponse({
       prompt,
-      model: usedModel,
+      model,
       fileUrls: fileUrls ? JSON.parse(fileUrls) : [],
+      prevResponses: prevResponses ? JSON.parse(prevResponses) : [],
     });
 
     if (!aiResponse) {
@@ -82,7 +82,7 @@ export const generateStreamText = async (
 
   const validate = (req as any).validated as GenerateStreamInput;
   const { prompt } = validate.query;
-  const { usedModel, fileUrls } = validate.body;
+  const { model, fileUrls } = validate.body;
 
   if (!prompt) {
     logger.error("prompt is missing in request");
@@ -95,7 +95,7 @@ export const generateStreamText = async (
 
   const response = await openRouterService.getOpenrouterRes({
     prompt,
-    model: usedModel,
+    model,
     fileUrls: fileUrls ? JSON.parse(fileUrls) : [],
     stream: true,
   });

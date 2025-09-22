@@ -3,8 +3,9 @@ import { z } from "zod";
 export const generateTextSchema = z.object({
   body: z.object({
     prompt: z.string().min(1),
-    usedModel: z.string().min(1).optional(),
+    model: z.string().min(1).optional(),
     fileUrls: z.string().optional(), // JSON string or omit
+    prevResponses: z.string().optional(), // JSON string or omit
   }),
 });
 
@@ -13,7 +14,7 @@ export const generateStreamSchema = z.object({
     prompt: z.string().min(1),
   }),
   body: z.object({
-    usedModel: z.string().min(1),
+    model: z.string().min(1),
     fileUrls: z.string().optional(),
   }),
 });

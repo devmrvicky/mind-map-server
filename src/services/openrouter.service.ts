@@ -1,16 +1,13 @@
 import { ChatCompletionMessageParam } from "openai/resources/chat";
 import { openrouter } from "../config/openrouter.config";
-import { getPrevResponses } from "../utils/handlePrevResponse";
 import { logger } from "../config/logger.config";
+import { env } from "../env/env";
 
 class OpenRouter {
-  private SYSTEM_PROMPT: string;
-  private prevResponse: ChatCompletionMessageParam[];
+  private SYSTEM_MESSAGE: string;
 
   constructor() {
-    this.SYSTEM_PROMPT =
-      "You are a helpful assistant. pretent your self as MindMap.ai. This is your name or identity.";
-    this.prevResponse = getPrevResponses();
+    this.SYSTEM_MESSAGE = env.SYSTEM_MESSAGE;
   }
 
   async getOpenrouterRes({
@@ -18,13 +15,17 @@ class OpenRouter {
     model,
     fileUrls,
     stream = false,
+    prevResponses,
   }: IGenerateAIResponseParams) {
     let messages: ChatCompletionMessageParam[] = [
-      { role: "system", content: this.SYSTEM_PROMPT },
+      { role: "system", content: this.SYSTEM_MESSAGE },
     ];
 
-    if (this.prevResponse.length) {
-      messages.push(...this.prevResponse);
+    logger.info(`previous responses: ${prevResponses}`);
+    if (prevResponses && prevResponses.length) {
+      prevResponses.forEach((prevResponse) => {
+        messages.push(prevResponse);
+      });
     }
     if (fileUrls && fileUrls.length) {
       messages.push({
@@ -76,16 +77,16 @@ class OpenRouter {
     prompt,
     model,
     fileUrls,
+    prevResponses,
   }: IGenerateAIResponseParams) {
     try {
-      const res = await this.getOpenrouterRes({ prompt, model, fileUrls });
-
-      logger.info("---Response---");
-      // logger.log(completion);
-      logger.log("message : ", res);
-      logger.info("---Response---");
+      const res = await this.getOpenrouterRes({
+        prompt,
+        model,
+        fileUrls,
+        prevResponses,
+      });
       return res;
-      // return false;
     } catch (error) {
       logger.info("---Error---");
       logger.error("Error generating response:", error);

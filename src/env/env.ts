@@ -33,6 +33,8 @@ const EnvSchema = z.object({
   PORT: z.string(),
 
   CLIENT_URL: z.string(),
+
+  SYSTEM_MESSAGE: z.string().default("You are a helpful assistant."),
 });
 
 const createEnv = () => {

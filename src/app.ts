@@ -10,8 +10,6 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-import { env } from "./env/env";
-
 // routes
 import chatRoutes from "./routes/chat.routes";
 import chatroomRoutes from "./routes/chatroom.routes";
@@ -30,7 +28,7 @@ const app = express();
 app.use(helmet());
 app.use(
   cors({
-    origin: env.CLIENT_URL,
+    origin: process.env.CLIENT_URL,
     credentials: true,
   })
 );

@@ -108,11 +108,11 @@ export const createChatRoom = async (
 // delete chat room
 export const deleteChatRoom = async (
   req: Request,
-  res: Response<SuccessResponse<null> | ErrorResponse>
+  res: Response<SuccessResponse<IChatRoom> | ErrorResponse>
 ): Promise<void> => {
   try {
     const validate = (req as any).validated as DeleteChatRoomInput;
-    const {chatRoomId} = validate.params;
+    const { chatRoomId } = validate.params;
     if (!chatRoomId) {
       logger.error("chatRoomId missing in request");
       res
@@ -132,7 +132,9 @@ export const deleteChatRoom = async (
 
     res
       .status(200)
-      .json(successHandler.create("Chat room deleted successfully", null));
+      .json(
+        successHandler.create("Chat room deleted successfully", deletedRoom)
+      );
   } catch (error) {
     logger.error("Error deleting chat room:", error);
     res

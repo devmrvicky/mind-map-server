@@ -1,5 +1,6 @@
 import { Document, mongo } from "mongoose";
 import { Response, Request } from "express";
+import { ChatCompletionMessageParam } from "openai/resources/chat";
 
 export { IUser, IChatRoom };
 
@@ -48,6 +49,7 @@ declare global {
     model?: string;
     fileUrls?: string[];
     stream?: boolean;
+    prevResponses?: ChatCompletionMessageParam[];
   }
 
   // async function generateAIResponse<IGenerateAIResponseParams>(
